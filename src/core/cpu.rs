@@ -117,13 +117,13 @@ impl CPU {
             }
             (0x8, _, _, 0x4) => {
                 let (value, carry) = self.registers[op2 as usize].overflowing_add(self.registers[op3 as usize]);
-                self.registers[op2 as usize] = value;
-                self.registers[0xF] = if carry { 0x1 } else { 0x0 };
+                self.registers[op2 as usize] = value as u8 as u16;
+                self.registers[0xF] = if carry { 0xF } else { 0x0 };
             }
             (0x8, _, _, 0x5) => {
                 let (value, borrow) = self.registers[op2 as usize].overflowing_sub(self.registers[op3 as usize]);
-                self.registers[op2 as usize] = value;
-                self.registers[0xF] = if !borrow { 0x1 } else { 0x0 };
+                self.registers[op2 as usize] = value as u8 as u16;
+                self.registers[0xF] = if !borrow { 0xF } else { 0x0 };
             }
             (0x8, _, _, 0x6) => {
                 self.registers[0xF] = self.registers[op3 as usize] & 0x1;
@@ -131,12 +131,13 @@ impl CPU {
             }
             (0x8, _, _, 0x7) => {
                 let (value, borrow) = self.registers[op3 as usize].overflowing_sub(self.registers[op2 as usize]);
-                self.registers[0xF] = if borrow { 0x0 } else { 0x1 };
-                self.registers[op2 as usize] = value;
+                self.registers[0xF] = if borrow { 0x0 } else { 0xF };
+                self.registers[op2 as usize] = value as u8 as u16;
             }
             (0x8, _, _, 0xE) => {
-                self.registers[0xF] = self.registers[op3 as usize] >> 7;
-                self.registers[op2 as usize] = self.registers[op3 as usize] << 1;
+                // self.registers[op2 as usize] = self.registers[op3 as usize];
+                self.registers[0xF] = (self.registers[op2 as usize] >> 7) as u8 as u16;
+                self.registers[op2 as usize] <<= 1u8 as u16;
             }
             (0x9, _, _, 0x0) => {
                 if self.registers[02 as usize] != self.registers[03 as usize] {
@@ -154,16 +155,16 @@ impl CPU {
                 self.registers[op2 as usize] = random & (opcode & 0x00FF);
             }
             (0xD, _, _, _) => {
-                let x = op2;
-                let y = op3;
+                let x = self.registers[op2 as usize];
+                let y = self.registers[op3 as usize];
                 let height = op4;
 
                 self.registers[0xF] = 0;
 
-                for y_line in 0..height - 1{
+                for y_line in 0..height {
                     let pixel = self.bus.memory[(self.i + y_line) as usize];
 
-                    for x_line in 0..7 {
+                    for x_line in 0..8 {
                         if pixel & (0x80 >> x_line) != 0 {
                             if self.bus.graphics.memory[(x + x_line + ((y + y_line) * 64)) as usize] {
                                 self.registers[0xF] = 1;
@@ -219,15 +220,13 @@ impl CPU {
                 self.bus.memory[(self.i + 2) as usize] = ((self.registers[op2 as usize] % 100) % 10) as u8;
             }
             (0xF, _, 0x5, 0x5) => {
-                for i in 0..op2 - 1 {
+                for i in 0..= op2 {
                     self.bus.memory[(self.i + i) as usize] = self.registers[i as usize] as u8;
-                    self.i += op2 + 1;
                 }
             }
             (0xF, _, 0x6, 0x5) => {
-                for i in 0..op2 - 1 {
+                for i in 0..= op2 {
                     self.registers[i as usize] = self.bus.memory[(self.i + i) as usize] as u16;
-                    self.i += op2 + 1;
                 }
             }
             (_, _, _, _) => unimplemented!("Unimplemented opcode: {}", opcode),

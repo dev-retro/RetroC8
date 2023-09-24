@@ -10,4 +10,8 @@ impl Input {
             keys: [false; KEY_COUNT]
         }
     }
+
+    pub fn update(&mut self, key: usize, value: bool) {
+        self.keys[key] = value;
+    }
 }
