@@ -12,7 +12,7 @@ pub struct CPU {
     pc: u16,
     sp: usize,
     stack: [u16; STACK_COUNT],
-    bus: MemoryBus
+    pub bus: MemoryBus
 }
 
 impl CPU {
@@ -27,8 +27,17 @@ impl CPU {
         }
     }
 
+    pub fn load_game(&mut self, file: &[u8]) {
+        if Some(file).is_some() {
+            if file.len() < 4096 - 512 {
+                self.bus.memory[512..512+file.len()].copy_from_slice(&file[..]);
+            }
+        }
+    }
+
     pub fn tick(&mut self) {
         let opcode = self.fetch();
+        self.execute(opcode);
     }
 
     pub fn tick_timers(&mut self) {
@@ -61,6 +70,7 @@ impl CPU {
 
         match (op1, op2, op3, op4) {
 
+            (0x0, 0x0, 0x0, 0x0) => return,
             (0x0, 0x0, 0xE, 0x0) => self.bus.graphics.memory = [false; 32 * 64],
             (0x0, 0x0, 0xE, 0xE) => {
                 self.sp -= 2;
