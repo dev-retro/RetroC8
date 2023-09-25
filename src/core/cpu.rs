@@ -7,8 +7,8 @@ const STACK_COUNT: usize = 12;
 const PROGRAM_START_ADDRESS: u16 = 0x200;
 
 pub struct CPU {
-    registers: [u16; REGISTER_SIZE],
-    i: u16,
+    registers: [u8; REGISTER_SIZE],
+    i: usize,
     pc: u16,
     sp: usize,
     stack: [u16; STACK_COUNT],
@@ -83,12 +83,12 @@ impl CPU {
                 self.pc = opcode & 0x0FFF;
             }
             (0x3, _, _, _) => {
-                if self.registers[op2 as usize] == opcode & 0x0FF {
+                if self.registers[op2 as usize] == (opcode & 0x0FF) as u8 {
                     self.pc += 2;
                 }
             }
             (0x4, _, _, _) => {
-                if self.registers[op2 as usize] != opcode & 0x0FF {
+                if self.registers[op2 as usize] != (opcode & 0x0FF) as u8 {
                     self.pc += 2;
                 }
             }
@@ -98,10 +98,11 @@ impl CPU {
                 }
             }
             (0x6, _, _, _) => {
-                self.registers[op2 as usize] = opcode & 0x00FF;
+                self.registers[op2 as usize] = (opcode & 0x00FF) as u8;
             }
             (0x7, _, _, _) => {
-                self.registers[op2 as usize] += opcode & 0x00FF;
+                let value = self.registers[op2 as usize].wrapping_add((opcode & 0x00FF) as u8);
+                self.registers[op2 as usize] = value;
             }
             (0x8, _, _, 0x0) => {
                 self.registers[op2 as usize] = self.registers[op3 as usize];
@@ -117,12 +118,12 @@ impl CPU {
             }
             (0x8, _, _, 0x4) => {
                 let (value, carry) = self.registers[op2 as usize].overflowing_add(self.registers[op3 as usize]);
-                self.registers[op2 as usize] = value as u8 as u16;
+                self.registers[op2 as usize] = value;
                 self.registers[0xF] = if carry { 0xF } else { 0x0 };
             }
             (0x8, _, _, 0x5) => {
                 let (value, borrow) = self.registers[op2 as usize].overflowing_sub(self.registers[op3 as usize]);
-                self.registers[op2 as usize] = value as u8 as u16;
+                self.registers[op2 as usize] = value;
                 self.registers[0xF] = if !borrow { 0xF } else { 0x0 };
             }
             (0x8, _, _, 0x6) => {
@@ -132,37 +133,37 @@ impl CPU {
             (0x8, _, _, 0x7) => {
                 let (value, borrow) = self.registers[op3 as usize].overflowing_sub(self.registers[op2 as usize]);
                 self.registers[0xF] = if borrow { 0x0 } else { 0xF };
-                self.registers[op2 as usize] = value as u8 as u16;
+                self.registers[op2 as usize] = value;
             }
             (0x8, _, _, 0xE) => {
-                // self.registers[op2 as usize] = self.registers[op3 as usize];
-                self.registers[0xF] = (self.registers[op2 as usize] >> 7) as u8 as u16;
-                self.registers[op2 as usize] <<= 1u8 as u16;
+                self.registers[op2 as usize] = self.registers[op3 as usize];
+                self.registers[0xF] = (self.registers[op2 as usize] & 0b10000000) >> 7u16;
+                self.registers[op2 as usize] <<= 1;
             }
             (0x9, _, _, 0x0) => {
-                if self.registers[02 as usize] != self.registers[03 as usize] {
+                if self.registers[02usize] != self.registers[03usize] {
                     self.pc += 2;
                 }
             }
             (0xA, _, _, _) => {
-                self.i = opcode & 0x0FFF;
+                self.i = (opcode & 0x0FFF) as usize;
             }
             (0xB, _, _, _) => {
-                self.pc = (opcode & 0x0FFF) + self.registers[0x0];
+                self.pc = (opcode & 0x0FFF) + self.registers[0x0] as u16;
             }
             (0xC, _, _, _) => {
                 let random = rand::thread_rng().gen_range(0..255);
-                self.registers[op2 as usize] = random & (opcode & 0x00FF);
+                self.registers[op2 as usize] = random & (opcode & 0x00FF) as u8;
             }
             (0xD, _, _, _) => {
-                let x = self.registers[op2 as usize];
-                let y = self.registers[op3 as usize];
-                let height = op4;
+                let x = self.registers[op2 as usize] as usize;
+                let y = self.registers[op3 as usize] as usize;
+                let height = op4 as usize;
 
                 self.registers[0xF] = 0;
 
                 for y_line in 0..height {
-                    let pixel = self.bus.memory[(self.i + y_line) as usize];
+                    let pixel = self.bus.memory[(self.i + y_line)];
 
                     for x_line in 0..8 {
                         if pixel & (0x80 >> x_line) != 0 {
@@ -209,10 +210,10 @@ impl CPU {
                 self.bus.sound_timer = self.registers[op2 as usize];
             }
             (0xF, _, 0x1, 0xE) => {
-                self.i = self.i + self.registers[op2 as usize];
+                self.i = self.i + self.registers[op2 as usize] as usize;
             }
             (0xF, _, 0x2, 0x9) => {
-                self.i = self.registers[op2 as usize] * 0x5;
+                self.i = (self.registers[op2 as usize] * 0x5) as usize;
             }
             (0xF, _, 0x3, 0x3) => {
                 self.bus.memory[self.i as usize] = (self.registers[op2 as usize] / 100) as u8;
@@ -220,13 +221,13 @@ impl CPU {
                 self.bus.memory[(self.i + 2) as usize] = ((self.registers[op2 as usize] % 100) % 10) as u8;
             }
             (0xF, _, 0x5, 0x5) => {
-                for i in 0..= op2 {
-                    self.bus.memory[(self.i + i) as usize] = self.registers[i as usize] as u8;
+                for i in 0..= op2 as usize {
+                    self.bus.memory[(self.i + i)] = self.registers[i];
                 }
             }
             (0xF, _, 0x6, 0x5) => {
-                for i in 0..= op2 {
-                    self.registers[i as usize] = self.bus.memory[(self.i + i) as usize] as u16;
+                for i in 0..= op2 as usize {
+                    self.registers[i] = self.bus.memory[(self.i + i)];
                 }
             }
             (_, _, _, _) => unimplemented!("Unimplemented opcode: {}", opcode),

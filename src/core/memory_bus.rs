@@ -25,8 +25,8 @@ const FONTSET: [u8; FONTSET_SIZE] = [
 
 pub struct MemoryBus {
     pub memory: [u8; MEMORY_SIZE],
-    pub delay_timer: u16,
-    pub sound_timer: u16,
+    pub delay_timer: u8,
+    pub sound_timer: u8,
     pub graphics: GPU,
     pub input: Input
 }
