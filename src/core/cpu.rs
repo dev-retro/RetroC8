@@ -120,30 +120,31 @@ impl CPU {
             }
             (0x8, _, _, 0x4) => {
                 let (value, carry) = self.registers[op2].overflowing_add(self.registers[op3]);
-                self.registers[op2 as usize] = value;
-                self.registers[0xF] = if carry { 0xF } else { 0x0 };
+                self.registers[op2] = value;
+                self.registers[0xF] = carry as u8;;
             }
             (0x8, _, _, 0x5) => {
                 let (value, borrow) = self.registers[op2].overflowing_sub(self.registers[op3]);
                 self.registers[op2] = value;
-                self.registers[0xF] = if !borrow { 0xF } else { 0x0 };
+                self.registers[0xF] = !borrow as u8;
             }
             (0x8, _, _, 0x6) => {
-                self.registers[0xF] = self.registers[op3] & 0x1;
+                let bit = self.registers[op3] & 0x1;
                 self.registers[op2] = self.registers[op3] >> 1;
+                self.registers[0xF] = bit;
             }
             (0x8, _, _, 0x7) => {
                 let (value, borrow) = self.registers[op3].overflowing_sub(self.registers[op2]);
-                self.registers[0xF] = if borrow { 0x0 } else { 0xF };
                 self.registers[op2] = value;
+                self.registers[0xF] = !borrow as u8;
             }
             (0x8, _, _, 0xE) => {
-                self.registers[op2] = self.registers[op3];
-                self.registers[0xF] = (self.registers[op2] & 0b10000000) >> 7u16;
-                self.registers[op2] <<= 1;
+                let bit = (self.registers[op3] & 0x8) >> 3;
+                self.registers[op2] = self.registers[op3] << 1;
+                self.registers[0xF] = bit;
             }
             (0x9, _, _, 0x0) => {
-                if self.registers[02usize] != self.registers[03usize] {
+                if self.registers[op2] != self.registers[op3] {
                     self.pc += 2;
                 }
             }
