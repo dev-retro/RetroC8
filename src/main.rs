@@ -12,7 +12,7 @@ const HEIGHT: usize = 32;
 
 fn main() {
     let mut chip_8 = cpu::CPU::new();
-    let mut game = File::open("/Users/hevey/Development/RetroCade/!debugging/chip8-test-suite/bin/3-Corax+.ch8").expect("File not able to be opened");
+    let mut game = File::open("/Users/hevey/Development/RetroCade/!debugging/chip8-test-suite/bin/4-flags.ch8").expect("File not able to be opened");
     let mut contents = Vec::new();
     game.read_to_end(&mut contents).expect("File could not be read");
     chip_8.load_game(&contents);
@@ -38,105 +38,105 @@ fn main() {
     let mut last_instruction_run_time = Instant::now();
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
-        // if last_instruction_run_time.elapsed() > Duration::from_millis(5) {
+        if last_instruction_run_time.elapsed() > Duration::from_millis(5) {
             last_instruction_run_time = Instant::now();
 
             if window.is_key_down(Key::Key1) {
-                chip_8.bus.input.update(0, true);
+                chip_8.bus.input.update(0x1, true);
             }
             if window.is_key_down(Key::Key2) {
-                chip_8.bus.input.update(1, true);
+                chip_8.bus.input.update(0x2, true);
             }
             if window.is_key_down(Key::Key3) {
-                chip_8.bus.input.update(2, true);
+                chip_8.bus.input.update(0x3, true);
             }
             if window.is_key_down(Key::Key4) {
-                chip_8.bus.input.update(3, true);
+                chip_8.bus.input.update(0xC, true);
             }
             if window.is_key_down(Key::Q) {
-                chip_8.bus.input.update(4, true);
+                chip_8.bus.input.update(0x4, true);
             }
             if window.is_key_down(Key::W) {
-                chip_8.bus.input.update(5, true);
+                chip_8.bus.input.update(0x5, true);
             }
             if window.is_key_down(Key::E) {
-                chip_8.bus.input.update(6, true);
+                chip_8.bus.input.update(0x6, true);
             }
             if window.is_key_down(Key::R) {
-                chip_8.bus.input.update(7, true);
+                chip_8.bus.input.update(0xD, true);
             }
             if window.is_key_down(Key::A) {
-                chip_8.bus.input.update(8, true);
+                chip_8.bus.input.update(0x7, true);
             }
             if window.is_key_down(Key::S) {
-                chip_8.bus.input.update(9, true);
+                chip_8.bus.input.update(0x8, true);
             }
             if window.is_key_down(Key::D) {
-                chip_8.bus.input.update(10, true);
+                chip_8.bus.input.update(0x9, true);
             }
             if window.is_key_down(Key::F) {
-                chip_8.bus.input.update(11, true);
+                chip_8.bus.input.update(0xE, true);
             }
             if window.is_key_down(Key::Z) {
-                chip_8.bus.input.update(12, true);
+                chip_8.bus.input.update(0xA, true);
             }
             if window.is_key_down(Key::X) {
-                chip_8.bus.input.update(13, true);
+                chip_8.bus.input.update(0x0, true);
             }
             if window.is_key_down(Key::C) {
-                chip_8.bus.input.update(14, true);
+                chip_8.bus.input.update(0xB, true);
             }
             if window.is_key_down(Key::V) {
-                chip_8.bus.input.update(15, true);
+                chip_8.bus.input.update(0xF, true);
             }
 
             if !window.is_key_down(Key::Key1) {
-                chip_8.bus.input.update(0, false);
+                chip_8.bus.input.update(0x1, false);
             }
             if !window.is_key_down(Key::Key2) {
-                chip_8.bus.input.update(1, false);
+                chip_8.bus.input.update(0x2, false);
             }
             if !window.is_key_down(Key::Key3) {
-                chip_8.bus.input.update(2, false);
+                chip_8.bus.input.update(0x3, false);
             }
             if !window.is_key_down(Key::Key4) {
-                chip_8.bus.input.update(3, false);
+                chip_8.bus.input.update(0xC, false);
             }
             if !window.is_key_down(Key::Q) {
-                chip_8.bus.input.update(4, false);
+                chip_8.bus.input.update(0x4, false);
             }
             if !window.is_key_down(Key::W) {
-                chip_8.bus.input.update(5, false);
+                chip_8.bus.input.update(0x5, false);
             }
             if !window.is_key_down(Key::E) {
-                chip_8.bus.input.update(6, false);
+                chip_8.bus.input.update(0x6, false);
             }
             if !window.is_key_down(Key::R) {
-                chip_8.bus.input.update(7, false);
+                chip_8.bus.input.update(0xD, false);
             }
             if !window.is_key_down(Key::A) {
-                chip_8.bus.input.update(8, false);
+                chip_8.bus.input.update(0x7, false);
             }
             if !window.is_key_down(Key::S) {
-                chip_8.bus.input.update(9, false);
+                chip_8.bus.input.update(0x8, false);
             }
             if !window.is_key_down(Key::D) {
-                chip_8.bus.input.update(10, false);
+                chip_8.bus.input.update(0x9, false);
             }
             if !window.is_key_down(Key::F) {
-                chip_8.bus.input.update(11, false);
+                chip_8.bus.input.update(0xE, false);
             }
             if !window.is_key_down(Key::Z) {
-                chip_8.bus.input.update(12, false);
+                chip_8.bus.input.update(0xA, false);
             }
             if !window.is_key_down(Key::X) {
-                chip_8.bus.input.update(13, false);
+                chip_8.bus.input.update(0x0, false);
             }
             if !window.is_key_down(Key::C) {
-                chip_8.bus.input.update(14, false);
+                chip_8.bus.input.update(0xB, false);
             }
             if !window.is_key_down(Key::V) {
-                chip_8.bus.input.update(15, false);
+                chip_8.bus.input.update(0xF, false);
             }
 
             chip_8.tick_timers();
@@ -151,10 +151,10 @@ fn main() {
 
                 chip_8.bus.graphics.draw = false;
             }
+        }
             // We unwrap here as we want this code to exit if it fails. Real applications may want to handle this in a different way
             window
                 .update_with_buffer(&buffer, WIDTH, HEIGHT)
                 .unwrap();
-        // }
     }
 }
