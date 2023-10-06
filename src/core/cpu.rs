@@ -73,7 +73,9 @@ impl CPU {
             (0x0, 0x0, 0x0, 0x0) => return,
             (0x0, 0x0, 0xE, 0x0) => self.bus.graphics.memory = [false; 32 * 64],
             (0x0, 0x0, 0xE, 0xE) => {
-                self.sp -= 2;
+                if self.sp >= 2 {
+                    self.sp -= 2;
+                }
                 self.pc = self.stack[self.sp];
             }
             (0x1, _, _, _) => {
@@ -111,12 +113,15 @@ impl CPU {
             }
             (0x8, _, _, 0x1) => {
                 self.registers[op2] = self.registers[op2] | self.registers[op3];
+                self.registers[0xF] = 0x0;
             }
             (0x8, _, _, 0x2) => {
                 self.registers[op2] &= self.registers[op3];
+                self.registers[0xF] = 0x0;
             }
             (0x8, _, _, 0x3) => {
                 self.registers[op2] ^= self.registers[op3];
+                self.registers[0xF] = 0x0;
             }
             (0x8, _, _, 0x4) => {
                 let (value, carry) = self.registers[op2].overflowing_add(self.registers[op3]);
@@ -159,8 +164,31 @@ impl CPU {
                 self.registers[op2] = random & (opcode & 0x00FF) as u8;
             }
             (0xD, _, _, _) => {
-                let x = self.registers[op2] as u16;
-                let y = self.registers[op3] as u16;
+                // self.registers[0xF] = 0;
+                // for y in 0..op4 as u16 {
+                //     let sprite = self.bus.memory[(self.i + y) as usize];
+                //     let row = ((self.registers[op3] + y as u8) % 32) as usize;
+                //
+                //     for x in 0..8 {
+                //         let b = (sprite & 0x80) >> 7;
+                //         let col = ((self.registers[op2] + x) % 64) as usize;
+                //         let offset = (row * 64 + col);
+                //
+                //         if b != 0 {
+                //             if !self.bus.graphics.memory[offset] {
+                //                 self.registers[0xF] = 1;
+                //             } else {
+                //                 self.bus.graphics.memory[offset] = true
+                //             }
+                //         }
+                //
+                //         self.bus.graphics.draw = true;
+                //     }
+                // }
+
+
+                let x = (self.registers[op2] % 64) as u16;
+                let y = (self.registers[op3] % 32) as u16;
                 let height = op4;
 
                 self.registers[0xF] = 0;
@@ -169,11 +197,13 @@ impl CPU {
                     let pixel = self.bus.memory[(self.i + y_line) as usize];
 
                     for x_line in 0..8 {
-                        if pixel & (0x80 >> x_line) != 0 {
-                            if self.bus.graphics.memory[(x + x_line + ((y + y_line) * 64)) as usize] {
-                                self.registers[0xF] = 1;
+                        if x + x_line < 64 && y + y_line < 32 {
+                            if pixel & (0x80 >> x_line) != 0 {
+                                if self.bus.graphics.memory[(x + x_line + ((y + y_line) * 64)) as usize] {
+                                    self.registers[0xF] = 1;
+                                }
+                                self.bus.graphics.memory[(x + x_line + ((y + y_line) * 64)) as usize] = !self.bus.graphics.memory[(x + x_line + ((y + y_line) * 64)) as usize];
                             }
-                            self.bus.graphics.memory[(x + x_line + ((y + y_line) * 64)) as usize] = !self.bus.graphics.memory[(x + x_line + ((y + y_line) * 64)) as usize];
                         }
                     }
 
@@ -224,14 +254,20 @@ impl CPU {
                 self.bus.memory[(self.i + 2) as usize] = ((self.registers[op2] % 100) % 10);
             }
             (0xF, _, 0x5, 0x5) => {
+                let mut i_temp = 0;
                 for i in 0..= op2 as u16 {
                     self.bus.memory[(self.i + i) as usize] = self.registers[i as usize];
+                    i_temp = i;
                 }
+                self.i = i_temp + op2 as u16 + 1;
             }
             (0xF, _, 0x6, 0x5) => {
+                let mut i_temp = 0;
                 for i in 0..= op2 as u16 {
                     self.registers[i as usize] = self.bus.memory[(self.i + i) as usize];
+                    i_temp = i;
                 }
+                self.i = i_temp + op2 as u16 + 1;
             }
             (_, _, _, _) => unimplemented!("Unimplemented opcode: {}", opcode),
         }

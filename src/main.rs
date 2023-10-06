@@ -12,7 +12,7 @@ const HEIGHT: usize = 32;
 
 fn main() {
     let mut chip_8 = cpu::CPU::new();
-    let mut game = File::open("/Users/hevey/Development/RetroCade/!debugging/chip8-test-suite/bin/4-flags.ch8").expect("File not able to be opened");
+    let mut game = File::open("/Users/hevey/Development/RetroCade/!debugging/chip8-test-suite/bin/5-quirks.ch8").expect("File not able to be opened");
     let mut contents = Vec::new();
     game.read_to_end(&mut contents).expect("File could not be read");
     chip_8.load_game(&contents);
