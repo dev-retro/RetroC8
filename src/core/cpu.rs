@@ -159,7 +159,7 @@ impl CPU {
                 self.registers[op2] = random & (opcode & 0x00FF) as u8;
             }
             (0xD, _, _, _) => {
-                let x = self.registers[op2]  as u16;
+                let x = self.registers[op2] as u16;
                 let y = self.registers[op3] as u16;
                 let height = op4;
 
