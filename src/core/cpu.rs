@@ -164,29 +164,6 @@ impl CPU {
                 self.registers[op2] = random & (opcode & 0x00FF) as u8;
             }
             (0xD, _, _, _) => {
-                // self.registers[0xF] = 0;
-                // for y in 0..op4 as u16 {
-                //     let sprite = self.bus.memory[(self.i + y) as usize];
-                //     let row = ((self.registers[op3] + y as u8) % 32) as usize;
-                //
-                //     for x in 0..8 {
-                //         let b = (sprite & 0x80) >> 7;
-                //         let col = ((self.registers[op2] + x) % 64) as usize;
-                //         let offset = (row * 64 + col);
-                //
-                //         if b != 0 {
-                //             if !self.bus.graphics.memory[offset] {
-                //                 self.registers[0xF] = 1;
-                //             } else {
-                //                 self.bus.graphics.memory[offset] = true
-                //             }
-                //         }
-                //
-                //         self.bus.graphics.draw = true;
-                //     }
-                // }
-
-
                 let x = (self.registers[op2] % 64) as u16;
                 let y = (self.registers[op3] % 32) as u16;
                 let height = op4;

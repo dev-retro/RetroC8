@@ -12,7 +12,7 @@ const HEIGHT: usize = 32;
 
 fn main() {
     let mut chip_8 = cpu::CPU::new();
-    let mut game = File::open("/Users/hevey/Development/RetroCade/!debugging/chip8-test-suite/bin/5-quirks.ch8").expect("File not able to be opened");
+    let mut game = File::open("/Volumes/Portable 1/Roms/CHIP-8/games/Breakout (Brix hack) [David Winter, 1997].ch8").expect("File not able to be opened");
     let mut contents = Vec::new();
     game.read_to_end(&mut contents).expect("File could not be read");
     chip_8.load_game(&contents);
@@ -33,7 +33,7 @@ fn main() {
     });
 
     // Limit to max ~60 fps update rate
-    //window.limit_update_rate(Some(std::time::Duration::from_micros(16600)));
+    window.limit_update_rate(Some(std::time::Duration::from_micros(16600)));
 
     let mut last_instruction_run_time = Instant::now();
 
