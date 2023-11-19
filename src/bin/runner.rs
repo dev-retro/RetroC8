@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{Read, Seek};
+use std::io::Read;
 use std::time::{Duration, Instant};
 use retro_c8::core;
 
