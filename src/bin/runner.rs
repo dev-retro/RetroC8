@@ -1,9 +1,7 @@
-pub mod core;
-
 use std::fs::File;
 use std::io::{Read, Seek};
 use std::time::{Duration, Instant};
-use crate::core::cpu;
+use retro_c8::core;
 
 use minifb::{Key, Window, WindowOptions};
 
@@ -11,8 +9,8 @@ const WIDTH: usize = 64;
 const HEIGHT: usize = 32;
 
 fn main() {
-    let mut chip_8 = cpu::CPU::new();
-    let mut game = File::open("/Volumes/Portable 1/Roms/CHIP-8/games/Breakout (Brix hack) [David Winter, 1997].ch8").expect("File not able to be opened");
+    let mut chip_8 = core::cpu::CPU::new();
+    let mut game = File::open("/Users/hevey/Development/RetroCade/!debugging/chip8-test-suite/bin/1-chip8-logo.ch8").expect("File not able to be opened");
     let mut contents = Vec::new();
     game.read_to_end(&mut contents).expect("File could not be read");
     chip_8.load_game(&contents);
@@ -20,7 +18,7 @@ fn main() {
     let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
 
     let mut window = Window::new(
-        "RetroC8",
+        "RetroC8 Runner",
         WIDTH,
         HEIGHT,
         WindowOptions {

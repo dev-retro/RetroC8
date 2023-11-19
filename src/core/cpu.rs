@@ -126,7 +126,7 @@ impl CPU {
             (0x8, _, _, 0x4) => {
                 let (value, carry) = self.registers[op2].overflowing_add(self.registers[op3]);
                 self.registers[op2] = value;
-                self.registers[0xF] = carry as u8;;
+                self.registers[0xF] = carry as u8;
             }
             (0x8, _, _, 0x5) => {
                 let (value, borrow) = self.registers[op2].overflowing_sub(self.registers[op3]);
@@ -226,9 +226,9 @@ impl CPU {
                 self.i = self.registers[op2] as u16 * 0x5;
             }
             (0xF, _, 0x3, 0x3) => {
-                self.bus.memory[self.i as usize] = (self.registers[op2] / 100);
-                self.bus.memory[(self.i + 1) as usize] = ((self.registers[op2] / 10) % 10);
-                self.bus.memory[(self.i + 2) as usize] = ((self.registers[op2] % 100) % 10);
+                self.bus.memory[self.i as usize] = self.registers[op2] / 100;
+                self.bus.memory[(self.i + 1) as usize] = (self.registers[op2] / 10) % 10;
+                self.bus.memory[(self.i + 2) as usize] = (self.registers[op2] % 100) % 10;
             }
             (0xF, _, 0x5, 0x5) => {
                 let mut i_temp = 0;
