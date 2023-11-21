@@ -58,10 +58,10 @@ struct CPU {
     }
     
     mutating func execute(opCode: UInt16) {
-        var op1 = (opCode & 0xF000) >> 12
-        var op2 = (opCode & 0x0F00) >> 8
-        var op3 = (opCode & 0x00F0) >> 4
-        var op4 = (opCode & 0x000F)
+        let op1 = (opCode & 0xF000) >> 12
+        let op2 = (opCode & 0x0F00) >> 8
+        let op3 = (opCode & 0x00F0) >> 4
+        let op4 = (opCode & 0x000F)
         
         switch (op1, op2, op3, op4) {
         case (0x0, 0x0, 0x0, 0x0):
@@ -94,7 +94,7 @@ struct CPU {
         case (0x6, _, _, _):
             registers[Int(op2)] = UInt8(opCode & 0x00FF)
         case (0x7, _, _, _):
-            var value = registers[Int(op2)] &+ UInt8(opCode & 0x00FF)
+            let value = registers[Int(op2)] &+ UInt8(opCode & 0x00FF)
             registers[Int(op2)] = value
         case (0x8, _, _, 0x0):
             registers[Int(op2)] = registers[Int(op3)]
@@ -108,23 +108,23 @@ struct CPU {
             registers[Int(op2)] ^= self.registers[Int(op3)]
             registers[0xF] = 0x0
         case (0x8, _, _, 0x4):
-            var (value, carry) = registers[Int(op2)].addingReportingOverflow(registers[Int(op3)])
+            let (value, carry) = registers[Int(op2)].addingReportingOverflow(registers[Int(op3)])
             registers[Int(op2)] = value
             registers[0xF] = carry == false ? 0x0 : 0xF
         case (0x8, _, _, 0x5):
-            var (value, carry) = registers[Int(op2)].subtractingReportingOverflow(registers[Int(op3)])
+            let (value, carry) = registers[Int(op2)].subtractingReportingOverflow(registers[Int(op3)])
             registers[Int(op2)] = value
             registers[0xF] = carry == true ? 0x0 : 0xF
         case (0x8, _, _, 0x6):
-            var bit = registers[Int(op3)] & 0x1
+            let bit = registers[Int(op3)] & 0x1
             registers[Int(op2)] = registers[Int(op3)] >> 1
             registers[0xF] = bit
         case (0x8, _, _, 0x7):
-            var (value, carry) = registers[Int(op3)].subtractingReportingOverflow(registers[Int(op2)])
+            let (value, carry) = registers[Int(op3)].subtractingReportingOverflow(registers[Int(op2)])
             registers[Int(op2)] = value
             registers[0xF] = carry == true ? 0x0 : 0xF
         case (0x8, _, _, 0xE):
-            var bit = (registers[Int(op3)] & 0x8) >> 3
+            let bit = (registers[Int(op3)] & 0x8) >> 3
             registers[Int(op2)] = registers[Int(op3)] << 1
             registers[0xF] = bit
         case (0x9, _, _, 0x0):
@@ -136,31 +136,82 @@ struct CPU {
         case (0xB, _, _, _):
             pc = (opCode & 0x0FFF) + UInt16(registers[0x0])
         case (0xC, _, _, _):
-            var random = UInt16.random(in: 0...255)
+            let random = UInt16.random(in: 0...255)
             registers[Int(op2)] = UInt8(random & (opCode & 0x00FF))
         case (0xD, _, _, _):
-            var x = (registers[Int(op2)] % 64)
-            var y = (registers[Int(op3)] % 32)
-            var height = op4
-
+            let x = registers[Int(op2)] % 64
+            let y = registers[Int(op3)] % 32
+            let height = UInt8(op4)
+            
             registers[0xF] = 0
 
             for y_line in 0..<height {
-                var pixel = bus.memory[Int((i + y_line))]
-
-                for var x_line in 0..<8 {
-                    if Int(x) + x_line < 64 && Int(y) + y_line < 32 {
+                let pixel = bus.memory[Int(i + UInt16(y_line))]
+                
+                for x_line in 0..<(8 as UInt8) {
+                    if x + x_line < 64 && y + y_line < 32 {
                         if pixel & (0x80 >> x_line) != 0 {
-                            if bus.gpu.memory[(x + x_line + ((y + y_line) * 64))] {
+                            let location = (x + x_line + ((y + y_line) * 64))
+                            if bus.gpu.memory[Int(location)] {
                                 registers[0xF] = 1
                             }
-                            bus.gpu.memory[(x + x_line + ((y + y_line) * 64))] = !bus.gpu.memory[(x + x_line + ((y + y_line) * 64))]
+                            
+                            let pixelValue = !bus.gpu.memory[Int(location)]
+                            
+                            bus.gpu.memory[Int(location)] = pixelValue
                         }
                     }
                 }
-
                 bus.gpu.draw = true
             }
+        case (0xE, _, 0x9, 0xE):
+            if bus.input.keys[Int(registers[Int(op2)])] {
+                pc += 2
+            }
+        case (0xE, _, 0xA, 0x1):
+            if !bus.input.keys[Int(registers[Int(op2)])] {
+                pc += 2
+            }
+        case (0xF, _, 0x0, 0x7):
+            registers[Int(op2)] = bus.delayTimer
+        case (0xF, _, 0x0, 0xA):
+            var keyPressed = false
+            
+            for key in bus.input.keys {
+                if key {
+                    keyPressed = true
+                }
+                
+                if !keyPressed {
+                    pc -= 2
+                }
+            }
+        case (0xF, _, 0x1, 0x5):
+            bus.delayTimer = registers[Int(op2)]
+        case (0xF, _, 0x1, 0x8):
+            bus.soundTimer = registers[Int(op2)]
+        case (0xF, _, 0x1, 0xE):
+            i += UInt16(registers[Int(op2)])
+        case (0xF, _, 0x2, 0x9):
+            i = UInt16(registers[Int(op2)]) * 0x5
+        case (0xF, _, 0x3, 0x3):
+            bus.memory[Int(i)] = registers[Int(op2)] / 100
+            bus.memory[Int(i + 1)] = (registers[Int(op2)] / 10) % 10
+            bus.memory[Int(i + 2)] = (registers[Int(op2)] % 100) % 10
+        case (0xF, _, 0x5, 0x5):
+            var i_temp: UInt16 = 0
+            for j in 0...op2 {
+                bus.memory[Int(i + j)] = registers[Int(j)]
+                i_temp = j
+            }
+            self.i = i_temp + UInt16(op2) + 1
+        case (0xF, _, 0x6, 0x5):
+            var i_temp: UInt16 = 0
+            for j in 0...op2 {
+                registers[Int(j)] = bus.memory[Int(i + j)]
+                i_temp = j
+            }
+            self.i = i_temp + UInt16(op2) + 1;
         default:
             fatalError("Unimplemented OpCode: \(opCode)")
         }
