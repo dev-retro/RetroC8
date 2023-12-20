@@ -35,6 +35,7 @@ struct CPU {
     }
     
     mutating func tick() {
+
         let opCode = fetch()
         execute(opCode: opCode)
     }
@@ -116,11 +117,11 @@ struct CPU {
         case (0x8, _, _, 0x4):
             let (value, carry) = registers[Int(op2)].addingReportingOverflow(registers[Int(op3)])
             registers[Int(op2)] = value
-            registers[0xF] = carry == false ? 0x0 : 0xF
+            registers[0xF] = carry == true ? 0x1 : 0x0
         case (0x8, _, _, 0x5):
             let (value, carry) = registers[Int(op2)].subtractingReportingOverflow(registers[Int(op3)])
             registers[Int(op2)] = value
-            registers[0xF] = carry == true ? 0x0 : 0xF
+            registers[0xF] = carry == false ? 0x1 : 0x0
         case (0x8, _, _, 0x6):
             let bit = registers[Int(op3)] & 0x1
             registers[Int(op2)] = registers[Int(op3)] >> 1
@@ -128,7 +129,7 @@ struct CPU {
         case (0x8, _, _, 0x7):
             let (value, carry) = registers[Int(op3)].subtractingReportingOverflow(registers[Int(op2)])
             registers[Int(op2)] = value
-            registers[0xF] = carry == true ? 0x0 : 0xF
+            registers[0xF] = carry == true ? 0x0 : 0x1
         case (0x8, _, _, 0xE):
             let bit = (registers[Int(op3)] & 0x8) >> 3
             registers[Int(op2)] = registers[Int(op3)] << 1
