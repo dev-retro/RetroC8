@@ -28,6 +28,12 @@ struct CPU {
         bus = MemoryBus()
     }
     
+    mutating func load(_ file: [UInt8]) {
+        if file.count < 4096 - 512 {
+            bus.memory.replaceSubrange(512...(512 + file.count), with: file)
+        }
+    }
+    
     mutating func tick() {
         let opCode = fetch()
         execute(opCode: opCode)
@@ -139,19 +145,19 @@ struct CPU {
             let random = UInt16.random(in: 0...255)
             registers[Int(op2)] = UInt8(random & (opCode & 0x00FF))
         case (0xD, _, _, _):
-            let x = registers[Int(op2)] % 64
-            let y = registers[Int(op3)] % 32
-            let height = UInt8(op4)
+            let x = UInt16(registers[Int(op2)] % 64)
+            let y = UInt16(registers[Int(op3)] % 32)
+            let height = UInt16(op4)
             
             registers[0xF] = 0
 
             for y_line in 0..<height {
-                let pixel = bus.memory[Int(i + UInt16(y_line))]
+                let pixel = bus.memory[Int(i + y_line)]
                 
-                for x_line in 0..<(8 as UInt8) {
+                for x_line in 0..<UInt16(8) {
                     if x + x_line < 64 && y + y_line < 32 {
                         if pixel & (0x80 >> x_line) != 0 {
-                            let location = (x + x_line + ((y + y_line) * 64))
+                            let location = x + x_line + ((y + y_line) * 64)  //UInt8(UInt(x + x_line) + (UInt((y + y_line)) * 64))
                             if bus.gpu.memory[Int(location)] {
                                 registers[0xF] = 1
                             }

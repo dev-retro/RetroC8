@@ -18,4 +18,8 @@ struct GPU {
         draw = true //TODO: Confirm whether this can be false once working.
     }
     
+    mutating func update(draw: Bool) {
+        self.draw = draw
+    }
+    
 }
