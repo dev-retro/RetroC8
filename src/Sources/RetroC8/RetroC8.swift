@@ -31,4 +31,8 @@ public struct RetroC8 {
     mutating public func update(draw: Bool) {
         cpu.bus.gpu.update(draw: draw)
     }
+    
+    mutating public func update(key: UInt, value: Bool) {
+        cpu.bus.input.update(key: key, value: value)
+    }
 }
