@@ -16,8 +16,8 @@ public struct RetroC8 {
         cpu.tick()
     }
     
-    public mutating func tickTimers() {
-        cpu.tickTimers()
+    public mutating func tickTimers(playSound: (Bool) ->()) {
+        cpu.tickTimers(playSound)
     }
     
     public func graphics() -> [Bool] {

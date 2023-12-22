@@ -40,16 +40,16 @@ struct CPU {
         execute(opCode: opCode)
     }
     
-    mutating func tickTimers() {
+    mutating func tickTimers(_ playSound: (Bool)->()) {
         if bus.delayTimer > 0 {
             bus.delayTimer -= 1
         }
         
         if bus.soundTimer > 0 {
-            if bus.soundTimer == 1 {
-                //TODO: BEEP
-            }
+            playSound(true)
             bus.soundTimer -= 1
+        } else {
+            playSound(false)
         }
     }
     
