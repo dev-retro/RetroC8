@@ -1,7 +1,18 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
-public struct RetroC8 {
+import RetroSwift
+import Foundation
+
+public struct RetroC8: RetroPlatform {
+    public var name = "CHIP-8"
+    public var description = "CHIP-8 is an interpreted programming language, developed by Joseph Weisbecker made on his 1802 Microprocessor. "
+    public var releaseDate = 1974
+    public var noOfPlayers = 2
+    public var platformName = "RetroC8"
+    public var platformDescription = "Retro platform the for CHIP-8 interpreter"
+    
+    
     var cpu: CPU
     
     public init() {
