@@ -18,7 +18,9 @@ let package = Package(
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "RetroC8"),
+            name: "RetroC8", dependencies: [
+                .product(name: "RetroSwift", package: "RetroSwift")
+            ]),
         .testTarget(
             name: "RetroC8Tests",
             dependencies: ["RetroC8"]),

@@ -5,6 +5,30 @@ import RetroSwift
 import Foundation
 
 public struct RetroC8: RetroPlatform {
+    public mutating func listInputs() -> [RetroSwift.RetroInput] {
+        return [RetroInput]()
+    }
+    
+    public mutating func update(inputs: [RetroSwift.RetroInput]) {
+        
+    }
+    
+    public mutating func setup() -> Bool {
+        return false
+    }
+    
+    public mutating func start() -> Bool {
+        return false
+    }
+    
+    public mutating func pause() -> Bool {
+        return false
+    }
+    
+    public mutating func stop() -> Bool {
+        return false
+    }
+    
     public var name = "CHIP-8"
     public var description = "CHIP-8 is an interpreted programming language, developed by Joseph Weisbecker made on his 1802 Microprocessor. "
     public var releaseDate = 1974
